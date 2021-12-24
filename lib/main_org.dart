@@ -5,10 +5,7 @@ import 'dart:io';
 
 //final imgUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 //final imgUrl = 'https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/10-million-password-list-top-10000.txt?raw=true';
-final imgUrl =
-    'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-10000.txt';
-final fileUrl =
-    'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000.txt';
+final imgUrl = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-10000.txt';
 var dio = Dio();
 
 void main() => runApp(MyApp());
@@ -44,43 +41,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future openFile({required String url, String? fileName}) async {
-    // get filename from url
-    final name = fileName ?? url.split('/').last;
-    print('name: ' + name);
-    // get fileName from declaration
-    //final file = await downloadFile(url, fileName!);
-    // get fileName from url
-    final file = await downloadFile(url, name);
-
-    if (file == null) return;
-    print('Path:  ${file.path}');
-    //OpenFile.open(filePath);
-  }
-
-  Future<File?> downloadFile(String url, String name) async {
-    final appStorage = await getApplicationDocumentsDirectory();
-    final file = File('${appStorage.path}/$name');
-    try {
-      final response = await Dio().get(
-        url,
-        onReceiveProgress: showDownloadProgress,
-        options: Options(
-          responseType: ResponseType.bytes,
-
-          followRedirects: false,
-          receiveTimeout: 0,
-        ),
-      );
-      final raf = file.openSync(mode: FileMode.write);
-      raf.writeFromSync(response.data);
-      await raf.close();
-      return file;
-    } catch (e) {
-      return null;
-    }
-  }
-
   Future download2(Dio dio, String url, String savePath) async {
     try {
       Response response = await dio.get(
@@ -110,13 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (total != -1) {
       int rec = received;
       int tot = total * 2;
-      print('received: ' +
-          rec.toString() +
-          ' total:' +
-          tot.toString() +
-          ' ' +
-          (received / (total * 2) * 100).toStringAsFixed(0) +
-          "%");
+      print('received: ' + rec.toString() + ' total:' + tot.toString() + ' ' + (received / (total*2) * 100).toStringAsFixed(0) + "%");
     }
   }
 
@@ -131,22 +85,13 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             RaisedButton.icon(
-                onPressed: () {
-                  openFile(
-                    url: fileUrl,
-                    // wenn die url den filename enthält...
-                    //fileName: 'top10.txt',
-                  );
-
-                  /*
+                onPressed: () async {
                   var tempDir = await getTemporaryDirectory();
                   //String fullPath = tempDir.path + "/boo2.pdf";
                   String fullPath = tempDir.path + "/top10000.txt";
                   print('full path ${fullPath}');
 
                   download2(dio, imgUrl, fullPath);
-
-                   */
                 },
                 icon: Icon(
                   Icons.file_download,
