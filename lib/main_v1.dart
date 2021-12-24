@@ -8,7 +8,7 @@ import 'dart:io';
 final imgUrl =
     'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-10000.txt';
 final fileUrl =
-    'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000000.txt';
+    'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000.txt';
 var dio = Dio();
 
 void main() => runApp(MyApp());
@@ -38,18 +38,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  double _progress = 0;
-
   void _incrementCounter() {
     setState(() {
       _counter++;
-    });
-  }
-
-  void _doProgress(double data) {
-    setState(() {
-      _progress = data;
-      print('doProgress data: ' + data.toString());
     });
   }
 
@@ -68,7 +59,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<File?> downloadFile(String url, String name) async {
-    _progress = 0;
     final appStorage = await getApplicationDocumentsDirectory();
     final file = File('${appStorage.path}/$name');
     try {
@@ -127,8 +117,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ' ' +
           (received / (total * 2) * 100).toStringAsFixed(0) +
           "%");
-      //_progress = received / (total * 2);
-      _doProgress(received / (total * 2));
     }
   }
 
@@ -149,9 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     // wenn die url den filename enthält...
                     //fileName: 'top10.txt',
                   );
-                  setState(() {
 
-                  });
                   /*
                   var tempDir = await getTemporaryDirectory();
                   //String fullPath = tempDir.path + "/boo2.pdf";
@@ -168,19 +154,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 color: Colors.green,
                 textColor: Colors.white,
-                label: Text('Download password list')),
+                label: Text('Dowload Invoice')),
             Text(
               'You have pushed the button this many times:',
             ),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
-            ),
-            CircularProgressIndicator(
-              strokeWidth: 4,
-              backgroundColor: Colors.red,
-              valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
-              value: _progress,
             ),
           ],
         ),
