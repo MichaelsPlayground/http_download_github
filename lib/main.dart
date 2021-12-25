@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
-//final imgUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
-//final imgUrl = 'https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/10-million-password-list-top-10000.txt?raw=true';
-final imgUrl =
-    'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-10000.txt';
-final fileUrl =
-    'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000000.txt';
+final fileUrl = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000000.txt';
+//final fileUrl = '';
+//final fileUrl = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-10000.txt';
+
 var dio = Dio();
 
 void main() => runApp(MyApp());
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Download known password list '),
     );
   }
 }
@@ -39,6 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   double _progress = 0;
+  bool _flag = false; // background color download button
 
   void _incrementCounter() {
     setState(() {
@@ -53,8 +53,21 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  String _getFilenameFromUrl(String url) {
+    final String predefinedFileName = 'file.dat';
+    try {
+      return url.split('/').last;
+    } catch (e) {
+      return predefinedFileName;
+    }
+  }
+
+  bool _fileExists(String filePath) {
+    return File(filePath).existsSync();
+  }
+
   Future openFile({required String url, String? fileName}) async {
-    // get filename from url
+    // get filename from url if no fileName was given
     final name = fileName ?? url.split('/').last;
     print('name: ' + name);
     // get fileName from declaration
@@ -77,10 +90,11 @@ class _MyHomePageState extends State<MyHomePage> {
         onReceiveProgress: showDownloadProgress,
         options: Options(
           responseType: ResponseType.bytes,
-
           followRedirects: false,
           receiveTimeout: 0,
+          headers: {HttpHeaders.acceptEncodingHeader: "*"}, // disable gzip
         ),
+
       );
       final raf = file.openSync(mode: FileMode.write);
       raf.writeFromSync(response.data);
@@ -117,18 +131,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void showDownloadProgress(received, total) {
     // ### total * 2 added, value seems to be just the half !
+    // if using this option no compression is done:
+    // headers: {HttpHeaders.acceptEncodingHeader: "*"}, // disable gzip
     if (total != -1) {
       int rec = received;
-      int tot = total * 2;
+      //int tot = total * 2;
+      int tot = total;
       print('received: ' +
           rec.toString() +
           ' total:' +
           tot.toString() +
           ' ' +
-          (received / (total * 2) * 100).toStringAsFixed(0) +
+          //(received / (total * 2) * 100).toStringAsFixed(0) +
+          (received / (total) * 100).toStringAsFixed(0) +
           "%");
       //_progress = received / (total * 2);
-      _doProgress(received / (total * 2));
+      //_doProgress(received / (total * 2));
+      _doProgress(received / (total));
     }
   }
 
@@ -142,16 +161,45 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            RaisedButton.icon(
+
+            ElevatedButton(
+                onPressed: () async {
+                  final appStorage = await getApplicationDocumentsDirectory();
+                  print('appStorage: ' + appStorage.toString());
+                  String passwordListName =
+                      appStorage.path + '/' +
+                      _getFilenameFromUrl(fileUrl);
+                  bool fileExists = _fileExists(passwordListName);
+                  print('file: ' + passwordListName +
+                  ' is existing: ' + fileExists.toString());
+                  if (fileExists) showAlertDialog(context);
+
+                  // get file size of download
+                  print('url: ' + fileUrl);
+                  var url = Uri.parse(fileUrl);
+
+                  //http.Response r = await http.get(url)
+                  http.Response r = await http.head(url,
+                  headers: {
+
+      });
+                  //http.Response r = await http.get(url);
+                  var urlFileSize = r.headers["content-length"];
+                  print('urlFileSize: ' + urlFileSize.toString());
+
+                },
+                child: Text('Download password list check'),
+      ),
+
+            ElevatedButton.icon(
+                //RaisedButton.icon(
                 onPressed: () {
                   openFile(
                     url: fileUrl,
                     // wenn die url den filename enthält...
                     //fileName: 'top10.txt',
                   );
-                  setState(() {
-
-                  });
+                  setState(() {});
                   /*
                   var tempDir = await getTemporaryDirectory();
                   //String fullPath = tempDir.path + "/boo2.pdf";
@@ -166,8 +214,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   Icons.file_download,
                   color: Colors.white,
                 ),
-                color: Colors.green,
-                textColor: Colors.white,
+                // https://stackoverflow.com/questions/66835173/how-to-change-background-color-of-elevated-button-in-flutter-from-function
+                // https://stackoverflow.com/a/67567397/8166854
+                style: ElevatedButton.styleFrom(
+                  primary: _flag ? Colors.red : Colors.green,
+                ),
+                //color: Colors.green,
+                //textColor: Colors.white,
                 label: Text('Download password list')),
             Text(
               'You have pushed the button this many times:',
@@ -190,6 +243,47 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ),
+    );
+  }
+
+  // source: https://stackoverflow.com/a/53844053/8166854
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: Text("Nein"),
+      onPressed:  () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget continueButton = TextButton(
+      child: Text("Ja"),
+      onPressed:  () {
+        Navigator.of(context).pop(); // dismiss dialog
+        openFile(
+          url: fileUrl,
+          // wenn die url den filename enthält...
+          //fileName: 'top10.txt',
+        );
+        setState(() {});
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Hinweis: Die Datei existiert"),
+      content: Text("Die Datei wurde bereits herunter geladen. Soll die Datei erneut geladen werden?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
     );
   }
 }

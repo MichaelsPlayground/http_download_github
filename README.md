@@ -1,6 +1,26 @@
 # http_download_github
 
 ```plaintext
+dio: https://pub.dev/packages/dio
+https://github.com/flutterchina/dio
+
+// to get fileSize before downloading
+http: ^0.13.4
+https://pub.dev/packages/http/
+
+To delete everything in a directory run: 
+rm /path/to/dir/* 
+rm /Users/michaelfehr/Library/Developer/CoreSimulator/Devices/5FDAD422-C091-4E8C-B558-AF16AC8B40CF/data/Containers/Data/Application/88BD34AE-59AA-4C92-8B3C-51ADE7C1A180/Documents/*
+To remove all sub-directories and files: 
+rm -r /path/to/dir/*
+...
+Understanding rm command option that deleted all files in a directory
+-r : Remove directories and their contents recursively.
+-f : Force option. ...
+-v : Verbose option.
+```
+
+```plaintext
 funktioniert: https://stackoverflow.com/a/59624159/8166854
 
 todo change storage from chace directory (temp) to App storage
@@ -19,6 +39,11 @@ AndroidManifest.xml:
   
   
 
+
+```
+
+```plaintext
+https://stackoverflow.com/questions/53844052/how-to-make-an-alertdialog-in-flutter
 
 ```
 
