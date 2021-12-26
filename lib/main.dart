@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
+//final fileUrl = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000.txt';
 final fileUrl = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000000.txt';
 //final fileUrl = '';
 //final fileUrl = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-10000.txt';
@@ -39,6 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   double _progress = 0;
   bool _flag = false; // background color download button
+  TextEditingController passwordController = TextEditingController();
 
   void _incrementCounter() {
     setState(() {
@@ -56,7 +60,9 @@ class _MyHomePageState extends State<MyHomePage> {
   String _getFilenameFromUrl(String url) {
     final String predefinedFileName = 'file.dat';
     try {
-      return url.split('/').last;
+      return url
+          .split('/')
+          .last;
     } catch (e) {
       return predefinedFileName;
     }
@@ -66,9 +72,48 @@ class _MyHomePageState extends State<MyHomePage> {
     return File(filePath).existsSync();
   }
 
+  Future<bool> _checkPassword(String password) async {
+    bool pwInFile = false;
+    final appStorage = await getApplicationDocumentsDirectory();
+    print('appStorage: ' + appStorage.toString());
+    String passwordListName =
+        appStorage.path + '/' +
+            _getFilenameFromUrl(fileUrl);
+    //var file = File(passwordListName);
+
+    await new File(passwordListName)
+        .openRead()
+        .transform(utf8.decoder)
+        .transform(new LineSplitter())
+        .forEach((l) {
+      if (l == password) {
+        pwInFile = true;
+        print('### PW found ###');
+        return;
+      }
+    }
+    );
+
+    /*
+    var raf = file.openSync(mode: FileMode.read);
+    String line;
+    while ((line = readLine(raf)!) != null)
+    {
+      if (line == password)
+      print('### password found ###');
+      return true;
+    }
+    */
+
+    // at this point the whole file was searched and not found
+    return pwInFile;
+  }
+
   Future openFile({required String url, String? fileName}) async {
     // get filename from url if no fileName was given
-    final name = fileName ?? url.split('/').last;
+    final name = fileName ?? url
+        .split('/')
+        .last;
     print('name: ' + name);
     // get fileName from declaration
     //final file = await downloadFile(url, fileName!);
@@ -163,36 +208,34 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
 
             ElevatedButton(
-                onPressed: () async {
-                  final appStorage = await getApplicationDocumentsDirectory();
-                  print('appStorage: ' + appStorage.toString());
-                  String passwordListName =
-                      appStorage.path + '/' +
-                      _getFilenameFromUrl(fileUrl);
-                  bool fileExists = _fileExists(passwordListName);
-                  print('file: ' + passwordListName +
-                  ' is existing: ' + fileExists.toString());
-                  if (fileExists) showAlertDialog(context);
+              onPressed: () async {
+                final appStorage = await getApplicationDocumentsDirectory();
+                print('appStorage: ' + appStorage.toString());
+                String passwordListName =
+                    appStorage.path + '/' +
+                        _getFilenameFromUrl(fileUrl);
+                bool fileExists = _fileExists(passwordListName);
+                print('file: ' + passwordListName +
+                    ' is existing: ' + fileExists.toString());
+                if (fileExists) showAlertDialog(context);
 
-                  // get file size of download
-                  print('url: ' + fileUrl);
-                  var url = Uri.parse(fileUrl);
+                // get file size of download
+                print('url: ' + fileUrl);
+                var url = Uri.parse(fileUrl);
 
-                  //http.Response r = await http.get(url)
-                  http.Response r = await http.head(url,
-                  headers: {
-
-      });
-                  //http.Response r = await http.get(url);
-                  var urlFileSize = r.headers["content-length"];
-                  print('urlFileSize: ' + urlFileSize.toString());
-
-                },
-                child: Text('Download password list check'),
-      ),
+                //http.Response r = await http.get(url)
+                http.Response r = await http.head(url,
+                    headers: {
+                    });
+                //http.Response r = await http.get(url);
+                var urlFileSize = r.headers["content-length"];
+                print('urlFileSize: ' + urlFileSize.toString());
+              },
+              child: Text('Download password list check'),
+            ),
 
             ElevatedButton.icon(
-                //RaisedButton.icon(
+              //RaisedButton.icon(
                 onPressed: () {
                   openFile(
                     url: fileUrl,
@@ -227,7 +270,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline4,
             ),
             CircularProgressIndicator(
               strokeWidth: 4,
@@ -235,6 +281,37 @@ class _MyHomePageState extends State<MyHomePage> {
               valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
               value: _progress,
             ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: TextField(
+                controller: passwordController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Enter a password',
+                ),
+              ),
+            ),
+            ElevatedButton(
+                onPressed: () async {
+                  String password = passwordController.text;
+                  // first check that password list is available
+                  final appStorage = await getApplicationDocumentsDirectory();
+                  print('appStorage: ' + appStorage.toString());
+                  String passwordListName =
+                      appStorage.path + '/' +
+                          _getFilenameFromUrl(fileUrl);
+                  bool fileExists = _fileExists(passwordListName);
+                  print('file: ' + passwordListName +
+                      ' is existing: ' + fileExists.toString());
+                  if (fileExists) {
+                    bool passwordInList = await _checkPassword(password);
+                    print('passwordInList: ' + passwordInList.toString());
+                    if (passwordInList) {
+                      showAlertDialogBadPassword(context);
+                    }
+                  }
+                },
+                child: Text('check password'))
           ],
         ),
       ),
@@ -251,13 +328,13 @@ class _MyHomePageState extends State<MyHomePage> {
     // set up the buttons
     Widget cancelButton = TextButton(
       child: Text("Nein"),
-      onPressed:  () {
+      onPressed: () {
         Navigator.of(context).pop();
       },
     );
     Widget continueButton = TextButton(
       child: Text("Ja"),
-      onPressed:  () {
+      onPressed: () {
         Navigator.of(context).pop(); // dismiss dialog
         openFile(
           url: fileUrl,
@@ -271,7 +348,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
       title: Text("Hinweis: Die Datei existiert"),
-      content: Text("Die Datei wurde bereits herunter geladen. Soll die Datei erneut geladen werden?"),
+      content: Text(
+          "Die Datei wurde bereits herunter geladen. Soll die Datei erneut geladen werden?"),
       actions: [
         cancelButton,
         continueButton,
@@ -283,6 +361,48 @@ class _MyHomePageState extends State<MyHomePage> {
       context: context,
       builder: (BuildContext context) {
         return alert;
+      },
+    );
+
+
+
+  }
+
+  showAlertDialogBadPassword(BuildContext context) {
+    // set up the buttons
+    /*
+      Widget cancelButton = TextButton(
+        child: Text("Nein"),
+        onPressed:  () {
+          Navigator.of(context).pop();
+        },
+      );*/
+    Widget continueButton = TextButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop(); // dismiss dialog
+        passwordController.text = '';
+        setState(() {});
+      },
+    );
+
+
+    // set up the AlertDialog
+    AlertDialog alertBadPassword = AlertDialog(
+      title: Text("Hinweis: Das Passwort ist bekannt"),
+      content: Text(
+          "Das Password ist weltweit bekannt und kann nicht genutzt werden, bitte wählen Sie ein anderes Passwort aus."),
+      actions: [
+        //cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alertBadPassword;
       },
     );
   }

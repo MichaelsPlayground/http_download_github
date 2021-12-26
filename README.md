@@ -1,5 +1,7 @@
 # http_download_github
 
+checks entered password if known in passsword list
+
 ```plaintext
 dio: https://pub.dev/packages/dio
 https://github.com/flutterchina/dio
