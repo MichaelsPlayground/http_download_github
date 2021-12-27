@@ -1,6 +1,6 @@
 # http_download_github
 
-checks entered password if known in passsword list
+checks entered password if it is known in passsword list
 
 ```plaintext
 dio: https://pub.dev/packages/dio
