@@ -45,6 +45,12 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController resultController = TextEditingController();
 
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
   void _doProgress(double data) {
     setState(() {
       _progress = data;
@@ -106,7 +112,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (file == null) return;
     print('Path:  ${file.path}');
-    resultController.text = 'The file ' + url + ' was downloaded';
     //OpenFile.open(filePath);
   }
 
@@ -173,11 +178,11 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: SingleChildScrollView(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            SizedBox(height: 20),
+
             ElevatedButton(
               onPressed: () async {
                 final appStorage = await getApplicationDocumentsDirectory();
@@ -188,8 +193,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 bool fileExists = _fileExists(passwordListName);
                 print('file: ' + passwordListName +
                     ' is existing: ' + fileExists.toString());
-                resultController.text = 'file: ' + passwordListName +
-                    ' is existing: ' + fileExists.toString();
                 if (fileExists) showAlertDialog(context);
 
                 // get file size of download
@@ -206,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: Text('Download password list check'),
             ),
-            SizedBox(height: 20),
+
             ElevatedButton.icon(
               //RaisedButton.icon(
                 onPressed: () {
@@ -229,14 +232,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 //color: Colors.green,
                 //textColor: Colors.white,
                 label: Text('Download password list')),
-            SizedBox(height: 20),
             CircularProgressIndicator(
               strokeWidth: 4,
               backgroundColor: Colors.red,
               valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
               value: _progress,
             ),
-            SizedBox(height: 20),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: TextField(
@@ -247,7 +248,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
             ElevatedButton(
                 onPressed: () async {
                   resultController.text = '';
@@ -270,17 +270,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     } else {
                       resultController.text = 'the entered password is NOT in the list';
                     }
-                  } else {
-                    resultController.text = 'The file ' + passwordListName + ' is NOT existing.';
                   }
                 },
                 child: Text('check password')),
-            SizedBox(height: 20),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: TextField(
                 controller: resultController,
-                maxLines: 6,
+                maxLines: 2,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Result of check',
