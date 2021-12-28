@@ -80,13 +80,28 @@ class _MyHomePageState extends State<MyHomePage> {
         .forEach((l) {
       if (l == password) {
         pwInFile = true;
-        //print('### PW found ###');
+        // print('### PW found ###');
         return;
       }
     }
     );
     // at this point the whole file was searched and not found
     return pwInFile;
+  }
+
+  Future openFileO({required String url, String? fileName}) async {
+    // get filename from url if no fileName was given
+    final name = fileName ?? url
+        .split('/')
+        .last;
+    // get fileName from declaration
+    //final file = await downloadFile(url, fileName!);
+    // get fileName from url
+    final file = await downloadFile(url, name);
+
+    if (file == null) return;
+    resultController.text = 'The file ' + url + ' was downloaded';
+    //OpenFile.open(filePath);
   }
 
   Future downloadFile(String url, String? fileName) async {
@@ -175,7 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 else {
                   // direct download
                   resultController.text = 'start download the file ' + fileUrl;
-                  await downloadFile(fileUrl, '');
+                  downloadFile(fileUrl, '');
                   setState(() {});
                 };
 
@@ -188,7 +203,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 //http.Response r = await http.get(url);
                 var urlFileSize = r.headers["content-length"];
                 resultController.text += ('/nurlFileSize: ' + urlFileSize.toString());
-                },
+
+              },
               child: Text('Download password list check'),
             ),
             SizedBox(height: 20),
@@ -281,11 +297,10 @@ class _MyHomePageState extends State<MyHomePage> {
       onPressed: () async {
         Navigator.of(context).pop(); // dismiss dialog
         resultController.text = 'start download the file ' + fileUrl;
-        await downloadFile(fileUrl, '');
+        downloadFile(fileUrl, '');
         setState(() {});
       },
     );
-
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
       title: Text("Hinweis: Die Datei existiert"),
@@ -296,7 +311,6 @@ class _MyHomePageState extends State<MyHomePage> {
         continueButton,
       ],
     );
-
     // show the dialog
     showDialog(
       context: context,
@@ -322,6 +336,7 @@ class _MyHomePageState extends State<MyHomePage> {
       content: Text(
           "Das Password ist weltweit bekannt und kann nicht genutzt werden, bitte wählen Sie ein anderes Passwort aus."),
       actions: [
+        //cancelButton,
         continueButton,
       ],
     );

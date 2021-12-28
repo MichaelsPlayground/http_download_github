@@ -29,10 +29,8 @@ Understanding rm command option that deleted all files in a directory
 ```plaintext
 AndroidManifest.xml:
   <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-  <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
-  
+
+ 
 ```
 
 ```plaintext
