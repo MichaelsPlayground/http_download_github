@@ -23,13 +23,7 @@ Understanding rm command option that deleted all files in a directory
 ```
 
 ```plaintext
-funktioniert: https://stackoverflow.com/a/59624159/8166854
 
-todo change storage from chace directory (temp) to App storage
-
-https://github.com/castariva18/Flutter-Example-Download-File
-
-image_gallery_saver: ^1.7.1
 ```
 
 ```plaintext
@@ -39,9 +33,6 @@ AndroidManifest.xml:
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
   
-  
-
-
 ```
 
 ```plaintext
